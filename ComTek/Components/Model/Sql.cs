@@ -6,20 +6,28 @@ namespace ComTek.Components.Model
     {
         private static string connectionString = "Data Source=HPOTEC\\Sqlexpress;Initial Catalog=WeatherForecastDB;Integrated Security=True;Trust Server Certificate=True;";
 
-        public static void Select(string queryString)
+        public static async Task<List<WeatherForecast>> GetWeatherForecastsAsync(string queryString)
         {
+            List<WeatherForecast> wfList = new();
+
             using (SqlConnection connection = new SqlConnection(connectionString))
             {
                 connection.Open();
                 SqlCommand command = new SqlCommand(queryString, connection);
-                using (SqlDataReader reader = command.ExecuteReader())
+                using (SqlDataReader reader = await command.ExecuteReaderAsync())
                 {
                     while (reader.Read())
                     {
-                        Console.WriteLine(String.Format("{0}", reader[2]));
+                        WeatherForecast wf = new();
+                        wf.Date = DateOnly.FromDateTime((DateTime)reader[0]);
+                        wf.TemperatureC = (int)reader[1];
+                        wf.Summary = (string)reader[2];
+                        wfList.Add(wf);
+                        //Console.WriteLine(String.Format("{0}", reader[2]));
                     }
                 }
             }
+            return wfList;
         }
     }
 }
