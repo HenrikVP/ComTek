@@ -1,5 +1,5 @@
 ﻿@page "/weather"
-@using ComTek.Components.Model
+@using Components.Model
 @attribute [StreamRendering]
 
 <PageTitle>Weather</PageTitle>
@@ -24,7 +24,7 @@ else
             </tr>
         </thead>
         <tbody>
-            @foreach (var forecast in forecasts)
+            @foreach (WeatherForecast forecast in forecasts)
             {
                 <tr>
                     <td>@forecast.Date.ToShortDateString()</td>
@@ -38,10 +38,14 @@ else
 }
 
 @code {
+    // We create a list where we store our data for the website
     private List<WeatherForecast>? forecasts;
 
+    // When page loads it starts the asynchronous OnInitializedAsync method, 
+    // where we call our asynchronous method GetWeatherForecastsAsync that returns 
+    // the data from our database.
     protected override async Task OnInitializedAsync()
     {
-        forecasts = await Components.Model.Sql.GetWeatherForecastsAsync("SELECT * FROM WeatherForecast");
+        forecasts = await Sql.GetWeatherForecastsAsync("SELECT * FROM WeatherForecast");
     }
 }
