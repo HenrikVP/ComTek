@@ -28,19 +28,37 @@ else
         <tbody>
             @foreach (WeatherForecast forecast in forecasts)
             {
-                <tr>
-                    <td>@forecast.Date.ToShortDateString()</td>
-                    <td>@forecast.TemperatureC</td>
-                    <td>@forecast.TemperatureF</td>
-                    <td>@forecast.Summary</td>
-                    <td><button class="btn btn-primary" @onclick="()=>Delete(forecast)">Del</button></td>
-                </tr>
+                @if (forecast.Edited)
+                {
+                    tempForecast = forecast;
+                    <tr>
+                        <td><input type="date" @bind="tempForecast.Date" /></td>
+                        <td><input type="number" @bind="tempForecast.TemperatureC" /></td>
+                        <td></td>
+                        <td><input type="text" placeholder="Summary" @bind="tempForecast.Summary" /></td>
+                        <td><button class="btn btn-primary" @onclick="()=>Edit(tempForecast)">Save</button></td>
+                    </tr>
+                }
+                else
+                {
+                    <tr>
+                        <td>@forecast.Date.ToShortDateString()</td>
+                        <td>@forecast.TemperatureC</td>
+                        <td>@forecast.TemperatureF</td>
+                        <td>@forecast.Summary</td>
+                        <td>
+                            <button class="btn btn-primary" @onclick="()=>Delete(forecast)">Del</button>
+                            <button class="btn btn-primary" @onclick="()=>forecast.Edited = true">Edit</button>
+                            
+                        </td>
+                    </tr>
+                }
             }
             <tr>
-                <td><input type="date" @bind="newForecast.Date"/></td>
-                <td><input type="number" @bind = "newForecast.TemperatureC"/></td>
+                <td><input type="date" @bind="tempForecast.Date" /></td>
+                <td><input type="number" @bind="tempForecast.TemperatureC" /></td>
                 <td></td>
-                <td><input type="text" placeholder="Summary" @bind = "newForecast.Summary"/></td>
+                <td><input type="text" placeholder="Summary" @bind="tempForecast.Summary" /></td>
                 <td><button class="btn btn-primary" @onclick="Insert">New</button></td>
             </tr>
         </tbody>
@@ -50,18 +68,30 @@ else
 @code {
     // We create a list where we store our data for the website
     private List<WeatherForecast>? forecasts;
-    private WeatherForecast newForecast = new() { Date = DateOnly.FromDateTime(DateTime.Now)};
+    private WeatherForecast tempForecast = new() { Date = DateOnly.FromDateTime(DateTime.Now) };
 
+    /// <summary>
+    /// Executes a nonQuery sql command by inserting into db the values binded in the input fields
+    /// Updates the page data by running a Task that runs an async method.
+    /// Resets the Forecast object.
+    /// </summary>
     private void Insert()
     {
-        Sql.CreateWeatherForecast(newForecast);
+        Sql.NonQuery(tempForecast, "INSERT INTO Weatherforecast ([Date], TemperatureC, Summary) VALUES (@date, @tempC, @summary)");
         forecasts = Task.Run(async () => await Sql.GetWeatherForecastsAsync<WeatherForecast>("SELECT * FROM WeatherForecast")).Result;
-        newForecast = new();
+        tempForecast = new() { Date = DateOnly.FromDateTime(DateTime.Now) };
+    }
+
+    private void Edit(WeatherForecast original)
+    {
+        Sql.NonQuery(tempForecast, "UPDATE Weatherforecast SET [Date] = @date, TemperatureC = @tempC, Summary = @summary WHERE Id = @id");
+        forecasts = Task.Run(async () => await Sql.GetWeatherForecastsAsync<WeatherForecast>("SELECT * FROM WeatherForecast")).Result;
+        tempForecast = new() { Date = DateOnly.FromDateTime(DateTime.Now) };
     }
 
     private void Delete(WeatherForecast wf)
     {
-        Sql.DeleteWeatherForecast(wf);
+        Sql.NonQuery(wf, "DELETE FROM Weatherforecast WHERE Date=@date AND TemperatureC=@tempC AND Summary=@summary");
         forecasts = Task.Run(async () => await Sql.GetWeatherForecastsAsync<WeatherForecast>("SELECT * FROM WeatherForecast")).Result;
     }
 

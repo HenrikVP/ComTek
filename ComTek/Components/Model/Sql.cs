@@ -26,6 +26,7 @@ namespace ComTek.Components.Model
                         wf.Date = DateOnly.FromDateTime((DateTime)reader[0]);
                         wf.TemperatureC = (int)reader[1];
                         wf.Summary = (string)reader[2];
+                        wf.Id = (int)reader[3];
                         //wfList.Add(wf);
                         wfList.Add((T)(object)wf);// Convert.ChangeType(wf, typeof(T)));
                     }
@@ -34,11 +35,17 @@ namespace ComTek.Components.Model
             return wfList;
         }
 
-        public static void CreateWeatherForecast(WeatherForecast wf)
+        /// <summary>
+        /// Multi-use method that can be used with Insert/Update/Delete
+        /// </summary>
+        /// <param name="wf">Weatherforecast object</param>
+        /// <param name="queryString">The SQL query</param>
+        public static void NonQuery(WeatherForecast wf, string queryString)
         {
-            using (SqlConnection connection = new SqlConnection(connectionString))
+            using (SqlConnection connection = new(connectionString))
             {
-                SqlCommand command = new SqlCommand("INSERT INTO Weatherforecast ([Date], TemperatureC, Summary) VALUES (@date, @tempC, @summary)", connection);
+                SqlCommand command = new(queryString, connection);
+                command.Parameters.Add("@id", SqlDbType.Int).Value = wf.Id;
                 command.Parameters.Add("@date", SqlDbType.Date).Value = wf.Date;
                 command.Parameters.Add("@tempC", SqlDbType.Int).Value = wf.TemperatureC;
                 command.Parameters.Add("@summary", SqlDbType.NVarChar).Value = wf.Summary;
@@ -46,21 +53,6 @@ namespace ComTek.Components.Model
                 command.Connection.Open();
                 command.ExecuteNonQuery();
             }
-        }
-
-        public static void DeleteWeatherForecast(WeatherForecast wf)
-        {
-            using (SqlConnection connection = new SqlConnection(connectionString))
-            {
-                SqlCommand command = new SqlCommand("DELETE FROM Weatherforecast WHERE Date = @date AND TemperatureC = @tempC AND Summary = @summary", connection);
-                command.Parameters.Add("@date", SqlDbType.Date).Value = wf.Date;
-                command.Parameters.Add("@tempC", SqlDbType.Int).Value = wf.TemperatureC;
-                command.Parameters.Add("@summary", SqlDbType.NVarChar).Value = wf.Summary;
-
-                command.Connection.Open();
-                command.ExecuteNonQuery();
-            }
-
         }
     }
 }
