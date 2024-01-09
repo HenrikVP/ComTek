@@ -1,6 +1,7 @@
 ﻿@page "/weather"
 @using Components.Model
 @attribute [StreamRendering]
+@rendermode InteractiveServer
 
 <PageTitle>Weather</PageTitle>
 
@@ -21,6 +22,7 @@ else
                 <th>Temp. (C)</th>
                 <th>Temp. (F)</th>
                 <th>Summary</th>
+                <th>Delete</th>
             </tr>
         </thead>
         <tbody>
@@ -31,8 +33,16 @@ else
                     <td>@forecast.TemperatureC</td>
                     <td>@forecast.TemperatureF</td>
                     <td>@forecast.Summary</td>
+                    <td><button class="btn btn-primary" @onclick="()=>Delete(forecast)">Del</button></td>
                 </tr>
             }
+            <tr>
+                <td><input type="date" @bind="newForecast.Date"/></td>
+                <td><input type="number" @bind = "newForecast.TemperatureC"/></td>
+                <td></td>
+                <td><input type="text" placeholder="Summary" @bind = "newForecast.Summary"/></td>
+                <td><button class="btn btn-primary" @onclick="Insert">New</button></td>
+            </tr>
         </tbody>
     </table>
 }
@@ -40,12 +50,26 @@ else
 @code {
     // We create a list where we store our data for the website
     private List<WeatherForecast>? forecasts;
+    private WeatherForecast newForecast = new() { Date = DateOnly.FromDateTime(DateTime.Now)};
 
-    // When page loads it starts the asynchronous OnInitializedAsync method, 
-    // where we call our asynchronous method GetWeatherForecastsAsync that returns 
+    private void Insert()
+    {
+        Sql.CreateWeatherForecast(newForecast);
+        forecasts = Task.Run(async () => await Sql.GetWeatherForecastsAsync<WeatherForecast>("SELECT * FROM WeatherForecast")).Result;
+        newForecast = new();
+    }
+
+    private void Delete(WeatherForecast wf)
+    {
+        Sql.DeleteWeatherForecast(wf);
+        forecasts = Task.Run(async () => await Sql.GetWeatherForecastsAsync<WeatherForecast>("SELECT * FROM WeatherForecast")).Result;
+    }
+
+    // When page loads it starts the asynchronous OnInitializedAsync method,
+    // where we call our asynchronous method GetWeatherForecastsAsync that returns
     // the data from our database.
     protected override async Task OnInitializedAsync()
     {
-        forecasts = await Sql.GetWeatherForecastsAsync("SELECT * FROM WeatherForecast");
+        forecasts = await Sql.GetWeatherForecastsAsync<WeatherForecast>("SELECT * FROM WeatherForecast");
     }
 }
