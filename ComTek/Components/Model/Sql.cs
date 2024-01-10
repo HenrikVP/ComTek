@@ -5,8 +5,11 @@ namespace ComTek.Components.Model
 {
     public class Sql
     {
+
+        // WARNING! NEVER put your connectionstring into the code that will be pushed to GITHUB
         // Connection string to our SQL server with the initial catalog set to our database. The login is Windows authentication (your user).
-        private static string connectionString = "Data Source=HPOTEC\\Sqlexpress;Initial Catalog=WeatherForecastDB;Integrated Security=True;Trust Server Certificate=True;";
+//        private static string connectionString = "Data Source=HPOTEC\\Sqlexpress;Initial Catalog=WeatherForecastDB;Integrated Security=True;Trust Server Certificate=True; Connect Timeout=3";
+        private static string connectionString = "Data Source=.,10433;Initial Catalog=WeatherForecastDB;User ID=sa;Password=Passw0rd;Connect Timeout=3;Encrypt=True;Trust Server Certificate=True;";
 
         // We connect to the database with SQL and return a list of weatherforecast objects.
         //public static async Task<List<WeatherForecast>> GetWeatherForecastsAsync(string queryString)

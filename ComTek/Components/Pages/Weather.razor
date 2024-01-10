@@ -49,7 +49,6 @@ else
                         <td>
                             <button class="btn btn-primary" @onclick="()=>Delete(forecast)">Del</button>
                             <button class="btn btn-primary" @onclick="()=>forecast.Edited = true">Edit</button>
-                            
                         </td>
                     </tr>
                 }
@@ -100,6 +99,13 @@ else
     // the data from our database.
     protected override async Task OnInitializedAsync()
     {
-        forecasts = await Sql.GetWeatherForecastsAsync<WeatherForecast>("SELECT * FROM WeatherForecast");
+        try
+        {
+            forecasts = await Sql.GetWeatherForecastsAsync<WeatherForecast>("SELECT * FROM WeatherForecast");
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine(e.Message);
+        }
     }
 }
