@@ -8,7 +8,6 @@ namespace ComTek.Components.Model
         // WARNING! NEVER put your connectionstring into the code that will be pushed to GITHUB
         // Connection string to our SQL server with the initial catalog set to our database. The login is Windows authentication (your user).
 //        private static string connectionString = "Data Source=HPOTEC\\Sqlexpress;Initial Catalog=WeatherForecastDB;Integrated Security=True;Trust Server Certificate=True; Connect Timeout=3";
-        private const string connectionString = "Data Source=10.233.149.11,10433;Initial Catalog=WeatherForecastDB;User ID=sa;Password=Passw0rd;Connect Timeout=3;Encrypt=True;Trust Server Certificate=True;";
 
         // We connect to the database with SQL and return a list of weatherforecast objects.
         //public static async Task<List<WeatherForecast>> GetWeatherForecastsAsync(string queryString)
@@ -16,7 +15,7 @@ namespace ComTek.Components.Model
         {
             List<T> wfList = new();
 
-            using (SqlConnection connection = new SqlConnection(connectionString))
+            using (SqlConnection connection = new SqlConnection(Secrets.connectionString))
             {
                 connection.Open();
                 SqlCommand command = new SqlCommand(queryString, connection);
@@ -44,7 +43,7 @@ namespace ComTek.Components.Model
         /// <param name="queryString">The SQL query</param>
         public static void NonQuery(WeatherForecast wf, string queryString)
         {
-            using (SqlConnection connection = new(connectionString))
+            using (SqlConnection connection = new(Secrets.connectionString))
             {
                 SqlCommand command = new(queryString, connection);
                 command.Parameters.Add("@id", SqlDbType.Int).Value = wf.Id;
